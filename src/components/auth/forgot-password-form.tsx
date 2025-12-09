@@ -1,6 +1,7 @@
 "use client";
 
-import { useFormState, useFormStatus } from 'react-dom';
+import { useActionState } from 'react';
+import { useFormStatus } from 'react-dom';
 import { requestPasswordReset, type ForgotPasswordState } from '@/app/actions';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
@@ -23,7 +24,7 @@ function SubmitButton() {
 }
 
 export function ForgotPasswordForm() {
-    const [state, formAction] = useFormState(requestPasswordReset, initialState);
+    const [state, formAction] = useActionState(requestPasswordReset, initialState);
 
     return (
          <div className="flex items-center justify-center min-h-screen bg-background p-4">
@@ -31,7 +32,7 @@ export function ForgotPasswordForm() {
                 <CardHeader className="text-center space-y-2">
                     <CardTitle className="text-2xl">Forgot Your Password?</CardTitle>
                     <CardDescription>
-                        No problem. Enter your email and we'll send you a reset link.
+                        No problem. Enter your email and we&apos;ll send you a reset link.
                     </CardDescription>
                 </CardHeader>
                 <form action={formAction}>

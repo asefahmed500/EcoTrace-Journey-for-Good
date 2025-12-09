@@ -3,8 +3,9 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { signIn } from 'next-auth/react';
-import { useFormState, useFormStatus } from 'react-dom';
+// Removed NextAuth signIn import
+import { useActionState } from 'react';
+import { useFormStatus } from 'react-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -15,6 +16,7 @@ import { useToast } from '@/hooks/use-toast';
 import { Loader2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useSearchParams } from 'next/navigation';
+import { signInWithGoogle } from '@/lib/google-auth';
 
 const initialRegisterState: RegisterState = { success: false, message: '' };
 
@@ -28,10 +30,10 @@ function CredentialsSubmitButton({ text, ...props }: { text: string } & React.Co
     );
 }
 
-function RegisterForm() {
+function RegisterForm({ setFormType }: { setFormType: (type: 'login' | 'register') => void }) {
     const { toast } = useToast();
     const router = useRouter();
-    const [state, formAction] = useFormState(registerUser, initialRegisterState);
+    const [state, formAction] = useActionState(registerUser, initialRegisterState);
 
     useEffect(() => {
         if (state.success) {
@@ -39,9 +41,8 @@ function RegisterForm() {
                 title: "Registration Successful",
                 description: state.message,
             });
-            // Redirect to dashboard after successful registration and sign-in
-            router.push('/dashboard');
-            router.refresh();
+            // Switch to login form after successful registration
+            setFormType('login');
         } else if (state.message && !state.fieldErrors) {
             toast({
                 variant: "destructive",
@@ -49,7 +50,7 @@ function RegisterForm() {
                 description: state.message,
             });
         }
-    }, [state, toast, router]);
+    }, [state, toast, router, setFormType]);
 
     return (
         <form action={formAction} className="space-y-4">
@@ -88,6 +89,24 @@ function CredentialsLoginForm() {
                 title: 'Login Failed',
                 description: 'Invalid email or password. Please try again.',
             });
+        } else if (error === 'OAuthSignin') {
+            toast({
+                variant: 'destructive',
+                title: 'Google Sign-in Failed',
+                description: 'There was an error initiating Google sign-in. Please try again.',
+            });
+        } else if (error === 'OAuthCallback') {
+            toast({
+                variant: 'destructive',
+                title: 'Google Sign-in Failed',
+                description: 'There was an error processing Google sign-in. Please try again.',
+            });
+        } else if (error === 'OAuthCreateAccount') {
+            toast({
+                variant: 'destructive',
+                title: 'Account Creation Failed',
+                description: 'Unable to create account with Google. Please try again.',
+            });
         }
     }, [searchParams, toast]);
 
@@ -100,25 +119,26 @@ function CredentialsLoginForm() {
         const password = formData.get('password') as string;
 
         try {
-            const result = await signIn('credentials', {
-                redirect: false,
-                email,
-                password,
+            const response = await fetch('/api/auth/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email, password }),
             });
 
-            if (result?.ok) {
-                router.push('/dashboard');
-                router.refresh();
+            const result = await response.json();
+
+            if (response.ok && result.success) {
+                const callbackUrl = searchParams.get('callbackUrl') || '/dashboard';
+                window.location.href = callbackUrl;
             } else {
-                 if (result?.error) {
-                    toast({
-                        variant: "destructive",
-                        title: "Login Failed",
-                        description: "Invalid email or password. Please try again.",
-                    });
-                }
+                toast({
+                    variant: "destructive",
+                    title: "Login Failed",
+                    description: result.error || "Invalid email or password. Please try again.",
+                });
             }
         } catch (error) {
+            console.error('Login error:', error);
             toast({
                 variant: "destructive",
                 title: "Login Error",
@@ -154,6 +174,8 @@ function CredentialsLoginForm() {
 
 export function LoginForm() {
     const [formType, setFormType] = useState<'login' | 'register'>('login');
+    const searchParams = useSearchParams();
+    const { toast } = useToast();
 
     const handleSwitch = () => {
         setFormType(prev => prev === 'login' ? 'register' : 'login');
@@ -171,7 +193,7 @@ export function LoginForm() {
                     </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                    {formType === 'login' ? <CredentialsLoginForm /> : <RegisterForm />}
+                    {formType === 'login' ? <CredentialsLoginForm /> : <RegisterForm setFormType={setFormType} />}
 
                     <div className="relative">
                         <div className="absolute inset-0 flex items-center">
@@ -185,11 +207,16 @@ export function LoginForm() {
                     <Button
                         variant="outline"
                         className="w-full"
-                        onClick={() => signIn('google', { callbackUrl: '/dashboard' })}
+                        onClick={() => {
+                            const callbackUrl = searchParams.get('callbackUrl') || '/dashboard';
+                            signInWithGoogle(callbackUrl);
+                        }}
                     >
                        <svg className="mr-2 h-4 w-4" aria-hidden="true" focusable="false" data-prefix="fab" data-icon="google" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 488 512"><path fill="currentColor" d="M488 261.8C488 403.3 391.1 504 248 504 110.8 504 0 393.2 0 256S110.8 8 248 8c66.8 0 126 21.2 172.9 56.5l-63.6 62.4C325.5 94.6 289.3 80 248 80c-82.6 0-150.2 67.5-150.2 150.5S165.4 406.5 248 406.5c95.2 0 131.3-81.5 133.7-124.2H248v-85.3h236.1c2.3 12.7 3.9 24.9 3.9 41.4z"></path></svg>
                        Sign in with Google
                     </Button>
+
+
                 </CardContent>
                 <CardFooter className="justify-center">
                     <Button variant="link" onClick={handleSwitch}>

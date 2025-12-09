@@ -24,10 +24,14 @@ export function AnalyticsDashboard({ journeys }: AnalyticsDashboardProps) {
     if (journeys.length === 0) {
       return {
         chartData: [],
+        weeklyData: [],
+        monthlyData: [],
         averageEmissions: 0,
         bestDay: null,
         mostCommonMode: 'N/A',
         totalDistance: 0,
+        ecoFriendlyPercentage: 0,
+        carbonSaved: 0,
       };
     }
 

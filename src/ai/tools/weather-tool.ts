@@ -1,10 +1,9 @@
 // src/ai/tools/weather-tool.ts
 'use server';
 /**
- * @fileOverview A Genkit tool for fetching weather data.
+ * @fileOverview A tool for fetching weather data.
  */
 
-import { ai } from '@/ai/genkit';
 import { z } from 'zod';
 
 const WeatherInputSchema = z.object({
@@ -18,14 +17,7 @@ const WeatherOutputSchema = z.object({
   windSpeedKph: z.number().describe('The current wind speed in kilometers per hour.'),
 });
 
-export const getWeather = ai.defineTool(
-  {
-    name: 'getWeather',
-    description: 'Returns the current weather conditions for a given location. Use this to determine if seasonal adjustments are needed for emissions calculations.',
-    inputSchema: WeatherInputSchema,
-    outputSchema: WeatherOutputSchema,
-  },
-  async (input) => {
+export async function getWeather(input: z.infer<typeof WeatherInputSchema>): Promise<z.infer<typeof WeatherOutputSchema>> {
     // In a real application, this would call a weather API like OpenWeatherMap.
     // For this example, we'll return simulated data.
     console.log(`[Weather Tool] Faking weather for lat: ${input.latitude}, lon: ${input.longitude}`);
@@ -41,5 +33,4 @@ export const getWeather = ai.defineTool(
       condition: randomCondition,
       windSpeedKph: randomWind,
     };
-  }
-);
+}

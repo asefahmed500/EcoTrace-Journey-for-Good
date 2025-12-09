@@ -10,8 +10,7 @@
  * - SuggestOptimalDepartureTimesOutput - The return type for the suggestOptimalDepartureTimes function.
  */
 
-import {ai} from '@/ai/genkit';
-import {z} from 'genkit';
+import {z} from 'zod';
 
 const SuggestOptimalDepartureTimesInputSchema = z.object({
   origin: z.string().describe('The starting point of the route.'),
@@ -52,48 +51,54 @@ export type SuggestOptimalDepartureTimesOutput = z.infer<
 export async function suggestOptimalDepartureTimes(
   input: SuggestOptimalDepartureTimesInput
 ): Promise<SuggestOptimalDepartureTimesOutput> {
-  return suggestOptimalDepartureTimesFlow(input);
-}
-
-const prompt = ai.definePrompt({
-  name: 'suggestOptimalDepartureTimesPrompt',
-  input: {schema: SuggestOptimalDepartureTimesInputSchema},
-  output: {schema: SuggestOptimalDepartureTimesOutputSchema},
-  prompt: `You are a sophisticated AI traffic and logistics analyst. Your goal is to predict the best departure times to minimize both travel time and carbon emissions for a given journey, while respecting the user's stated preferences.
-
-  You will analyze the following request:
-  - Origin: {{{origin}}}
-  - Destination: {{{destination}}}
-  - Mode of Transport: {{{transportMode}}}
-  - User Preferences: {{{preferences}}}
+  // Mock implementation without Google AI
+  const { transportMode, preferences } = input;
   
-  Based on this, perform the following analysis:
-  1.  **Analyze by Transport Mode**: Your analysis MUST be tailored to the transport mode.
-      *   If 'driving', predict traffic patterns to avoid congestion. Consider time of day, day of the week, and common congestion points. The goal is to avoid stop-and-go traffic.
-      *   If 'public transit', the goal is to suggest times that avoid peak-hour crowding for a more pleasant journey, which also correlates with efficient service operation. Assume peak hours are 7-9am and 4-6pm.
-      *   If 'cycling' or 'walking', the goal is to suggest times with good daylight (e.g., not too late at night) and potentially less vehicle traffic for safety and air quality.
-
-  2.  **Identify Optimal Windows**: Based on your mode-specific analysis, identify up to 3 optimal departure times (formatted as HH:mm) that would likely result in the best experience.
+  let optimalTimes: string[] = [];
+  let reasoning = '';
   
-  3.  **Provide Reasoning**: For each suggestion, provide a concise explanation. Justify *why* these times are better from the perspective of the chosen transport mode (e.g., traffic for driving, crowds for transit, safety for cycling). For example: "Departing at 10:00 avoids the peak morning commute, leading to smoother travel and about 15% lower fuel consumption."
-
-  4.  **Incorporate Preferences**: Carefully review the user's preferences. If they've listed a favorite route, factor that into your traffic analysis. If they have environmental priorities like 'avoiding traffic congestion', emphasize how your suggestions meet that goal. If their preferred mode matches the request, acknowledge it. Your reasoning should explicitly mention how it aligns with their priorities. For example: "Since you prioritize avoiding congestion, leaving at 10:00 is ideal."
-  
-  Your output must strictly follow the JSON schema provided.
-  `,
-});
-
-const suggestOptimalDepartureTimesFlow = ai.defineFlow(
-  {
-    name: 'suggestOptimalDepartureTimesFlow',
-    inputSchema: SuggestOptimalDepartureTimesInputSchema,
-    outputSchema: SuggestOptimalDepartureTimesOutputSchema,
-  },
-  async input => {
-    const {output} = await prompt(input);
-    if (!output) {
-      throw new Error('The AI model failed to generate a valid response for predictive routing.');
-    }
-    return output;
+  switch (transportMode.toLowerCase()) {
+    case 'driving':
+      optimalTimes = ['09:30', '14:00', '19:30'];
+      reasoning = 'These times avoid peak traffic hours (7-9am and 4-6pm), reducing fuel consumption by up to 20% due to smoother traffic flow. Mid-morning and early afternoon offer the best balance of light traffic and good visibility.';
+      break;
+      
+    case 'public transit':
+      optimalTimes = ['09:00', '13:30', '20:00'];
+      reasoning = 'Departing after morning rush hour ensures less crowded trains/buses and more reliable schedules. Early afternoon provides excellent service frequency, while evening departure avoids the 4-6pm peak.';
+      break;
+      
+    case 'cycling':
+      optimalTimes = ['08:00', '16:00', '18:30'];
+      reasoning = 'Early morning offers cooler temperatures and lighter traffic. Late afternoon provides good daylight and moderate temperatures. Early evening avoids peak heat while maintaining good visibility for safety.';
+      break;
+      
+    case 'walking':
+      optimalTimes = ['07:30', '15:30', '17:00'];
+      reasoning = 'Morning departure provides fresh air and cooler temperatures. Afternoon times offer pleasant weather and good daylight. All suggested times ensure safe visibility and comfortable walking conditions.';
+      break;
+      
+    default:
+      optimalTimes = ['09:00', '14:00', '19:00'];
+      reasoning = 'General optimal times that avoid peak traffic hours and provide good travel conditions for most transportation modes.';
   }
-);
+  
+  // Incorporate user preferences if provided
+  if (preferences && preferences.toLowerCase().includes('early')) {
+    optimalTimes = optimalTimes.map(time => {
+      const [hour, minute] = time.split(':').map(Number);
+      const newHour = Math.max(6, hour - 1);
+      return `${newHour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`;
+    });
+    reasoning += ' Times adjusted earlier based on your preference for early departures.';
+  }
+  
+  if (preferences && preferences.toLowerCase().includes('avoid congestion')) {
+    reasoning += ' These recommendations specifically prioritize avoiding traffic congestion to minimize emissions and travel time.';
+  }
+  
+  return {
+    optimalDepartureTimes: optimalTimes,
+    reasoning
+  };
+}

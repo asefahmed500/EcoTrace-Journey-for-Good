@@ -7,8 +7,7 @@
  * - CommunityImpactOutput - The return type for the getCommunityImpactZones function.
  */
 
-import {ai} from '@/ai/genkit';
-import {z} from 'genkit';
+import {z} from 'zod';
 
 const CommunityImpactInputSchema = z.object({
   latitude: z.number().describe('The latitude of the map center.'),
@@ -38,41 +37,52 @@ export type CommunityImpactOutput = z.infer<typeof CommunityImpactOutputSchema>;
 export async function getCommunityImpactZones(
   input: CommunityImpactInput
 ): Promise<CommunityImpactOutput> {
-  return communityImpactFlow(input);
-}
-
-const prompt = ai.definePrompt({
-  name: 'communityImpactPrompt',
-  input: {schema: CommunityImpactInputSchema},
-  output: {schema: CommunityImpactOutputSchema},
-  prompt: `You are an expert urban planner and data analyst. Your task is to identify areas that would significantly benefit from improved public transportation.
-
-  Analyze the area around latitude {{{latitude}}} and longitude {{{longitude}}} within a {{{radius}}}km radius.
-
-  Identify up to 5 specific zones (e.g., neighborhoods, districts, industrial parks) where improved public transit could have the highest positive impact.
-
-  For each zone, consider factors like:
-  - Population density
-  - Proximity to essential services (hospitals, schools, grocery stores)
-  - Current public transit accessibility (or lack thereof)
-  - Economic conditions and employment centers
-  - Potential for reducing traffic congestion and carbon emissions
-
-  Provide a concise name for each zone and a compelling reason why it's a priority area. Be specific and data-driven in your reasoning, even if you have to infer the data based on typical urban layouts.
-  `,
-});
-
-const communityImpactFlow = ai.defineFlow(
-  {
-    name: 'communityImpactFlow',
-    inputSchema: CommunityImpactInputSchema,
-    outputSchema: CommunityImpactOutputSchema,
-  },
-  async input => {
-    const {output} = await prompt(input);
-    if (!output) {
-      throw new Error('The AI model failed to generate a valid response for community impact zones.');
+  // Mock implementation without Google AI
+  const { latitude, longitude, radius } = input;
+  
+  // Generate mock community impact zones based on typical urban patterns
+  const zones = [
+    {
+      name: "Downtown Business District",
+      lat: latitude + 0.01,
+      lng: longitude + 0.01,
+      reasoning: "High employment density with limited parking creates significant demand for public transit. Improved connections could reduce 40% of daily commuter traffic."
+    },
+    {
+      name: "Residential Suburbs North",
+      lat: latitude + 0.02,
+      lng: longitude - 0.01,
+      reasoning: "Growing residential area with poor transit connectivity. Many residents drive 15+ km daily to reach employment centers, creating high emissions per capita."
+    },
+    {
+      name: "University Campus Area",
+      lat: latitude - 0.015,
+      lng: longitude + 0.02,
+      reasoning: "Large student population relies heavily on personal vehicles. Enhanced transit could serve 8,000+ daily trips and reduce campus parking demand by 60%."
+    },
+    {
+      name: "Industrial Park East",
+      lat: latitude + 0.005,
+      lng: longitude + 0.025,
+      reasoning: "Major employment hub with shift workers needing reliable transit. Current bus service is limited, forcing workers to drive, contributing to peak-hour congestion."
+    },
+    {
+      name: "Medical District",
+      lat: latitude - 0.01,
+      lng: longitude - 0.015,
+      reasoning: "Hospital and clinic complex serves the entire region. Patients and staff generate high traffic volumes. Better transit access would improve healthcare accessibility."
     }
-    return output;
-  }
-);
+  ];
+  
+  // Filter zones within the specified radius (simplified calculation)
+  const filteredZones = zones.filter(zone => {
+    const distance = Math.sqrt(
+      Math.pow(zone.lat - latitude, 2) + Math.pow(zone.lng - longitude, 2)
+    ) * 111; // Rough km conversion
+    return distance <= radius;
+  });
+  
+  return {
+    communityImpactZones: filteredZones.slice(0, 5)
+  };
+}

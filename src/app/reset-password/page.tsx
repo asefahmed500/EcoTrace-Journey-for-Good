@@ -5,12 +5,13 @@ function ResetPasswordContent({ token }: { token: string }) {
     return <ResetPasswordForm token={token} />;
 }
 
-export default function ResetPasswordPage({
+export default async function ResetPasswordPage({
   searchParams,
 }: {
-  searchParams: { [key: string]: string | string[] | undefined };
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }) {
-  const token = typeof searchParams.token === 'string' ? searchParams.token : '';
+  const params = await searchParams;
+  const token = typeof params.token === 'string' ? params.token : '';
   
   return (
     <Suspense fallback={<div>Loading...</div>}>

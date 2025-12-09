@@ -5,7 +5,7 @@ import dbConnect from '@/lib/db';
 import User from '@/models/User';
 import bcrypt from 'bcryptjs';
 import { NextResponse } from 'next/server';
-import { signIn } from '@/auth';
+// signIn removed - not needed for registration API
 
 const registerSchema = z.object({
   name: z.string().min(3, { message: 'Name must be at least 3 characters.' }),
@@ -46,12 +46,7 @@ export async function POST(req: Request) {
       password: hashedPassword,
     });
     
-    // Sign in the user after registration
-    await signIn('credentials', {
-        email,
-        password,
-        redirect: false,
-    });
+    // User created successfully - they can now sign in manually
 
     return NextResponse.json({
       success: true,

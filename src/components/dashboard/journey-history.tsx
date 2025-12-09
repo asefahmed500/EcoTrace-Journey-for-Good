@@ -142,7 +142,7 @@ export function JourneyHistory({ journeys }: JourneyHistoryProps) {
               ) : (
                 <TableRow>
                     <TableCell colSpan={4} className="text-center text-muted-foreground py-10">
-                        You haven't logged any journeys yet. Use the calculator to get started!
+                        You haven&apos;t logged any journeys yet. Use the calculator to get started!
                     </TableCell>
                 </TableRow>
               )}

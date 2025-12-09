@@ -1,21 +1,21 @@
-'use server';
-
-import { auth } from '@/auth';
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { getAuthenticatedUserData } from '@/app/actions';
+import { getAuthSession } from '@/lib/auth-wrapper';
 
-export async function GET() {
-    const session = await auth();
+export async function GET(request: NextRequest) {
+  try {
+    const session = await getAuthSession();
     if (!session?.user?.id) {
-        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    try {
-        const { achievements } = await getAuthenticatedUserData();
-        return NextResponse.json(achievements);
-    } catch (e) {
-        console.error('Error fetching achievements:', e);
-        const errorMessage = e instanceof Error ? e.message : 'An unexpected error occurred.';
-        return NextResponse.json({ error: 'Failed to fetch achievements.', details: errorMessage }, { status: 500 });
-    }
+    const { achievements } = await getAuthenticatedUserData();
+    return NextResponse.json({ achievements });
+  } catch (error) {
+    console.error('Error in badges API:', error);
+    return NextResponse.json(
+      { error: 'An unexpected error occurred while fetching badges.' },
+      { status: 500 }
+    );
+  }
 }

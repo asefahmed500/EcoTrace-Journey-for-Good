@@ -14,7 +14,7 @@ const testimonials = [
     role: "Urban Planner",
     avatar: "https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?q=80&w=100&auto=format&fit=crop",
     avatarHint: "man professional",
-    text: "As an urban planner, I'm blown away by the potential of EcoTrace. The community impact features provide invaluable insights. It's a powerful tool for both individuals and cities.",
+    text: "As an urban planner, I&apos;m blown away by the potential of EcoTrace. The community impact features provide invaluable insights. It&apos;s a powerful tool for both individuals and cities.",
   },
   {
     name: "GreenTech Corp",
@@ -35,7 +35,7 @@ export function TestimonialsSection() {
             Loved by Eco-Warriors Worldwide
           </p>
           <p className="mt-6 max-w-2xl mx-auto text-lg text-muted-foreground">
-            Don't just take our word for it. Here's what our users are saying about their journey with EcoTrace.
+            Don&apos;t just take our word for it. Here&apos;s what our users are saying about their journey with EcoTrace.
           </p>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
@@ -43,7 +43,7 @@ export function TestimonialsSection() {
             <Card key={index} className="flex flex-col justify-between">
               <CardContent className="pt-6">
                 <blockquote className="text-lg text-foreground mb-6">
-                  "{testimonial.text}"
+                  &ldquo;{testimonial.text}&rdquo;
                 </blockquote>
               </CardContent>
               <div className="bg-muted/50 p-6 flex items-center gap-4 rounded-b-lg">

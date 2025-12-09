@@ -1,6 +1,6 @@
 'use server';
 
-import { auth } from '@/auth';
+import { getAuthSession } from '@/lib/auth-wrapper';
 import { NextResponse } from 'next/server';
 import dbConnect from '@/lib/db';
 import Journey from '@/models/Journey';
@@ -15,15 +15,16 @@ async function getJourney(id: string, userId: string) {
     return journey;
 }
 
-export async function GET(req: Request, { params }: { params: { id: string } }) {
-    const session = await auth();
+export async function GET(req: Request, { params }: { params: Promise<{ id: string }> }) {
+    const session = await getAuthSession();
     if (!session?.user?.id) {
         return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
     try {
         await dbConnect();
-        const journey = await getJourney(params.id, session.user.id);
+        const { id } = await params;
+        const journey = await getJourney(id, session.user.id);
 
         if (!journey) {
             return NextResponse.json({ error: 'Journey not found' }, { status: 404 });
@@ -36,15 +37,16 @@ export async function GET(req: Request, { params }: { params: { id: string } }) 
     }
 }
 
-export async function PUT(req: Request, { params }: { params: { id: string } }) {
-    const session = await auth();
+export async function PUT(req: Request, { params }: { params: Promise<{ id: string }> }) {
+    const session = await getAuthSession();
     if (!session?.user?.id) {
         return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
     try {
         await dbConnect();
-        const journey = await getJourney(params.id, session.user.id);
+        const { id } = await params;
+        const journey = await getJourney(id, session.user.id);
 
         if (!journey) {
             return NextResponse.json({ error: 'Journey not found' }, { status: 404 });
@@ -75,15 +77,16 @@ export async function PUT(req: Request, { params }: { params: { id: string } }) 
 }
 
 
-export async function DELETE(req: Request, { params }: { params: { id: string } }) {
-    const session = await auth();
+export async function DELETE(req: Request, { params }: { params: Promise<{ id: string }> }) {
+    const session = await getAuthSession();
     if (!session?.user?.id) {
         return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
     
     try {
         await dbConnect();
-        const journey = await getJourney(params.id, session.user.id);
+        const { id } = await params;
+        const journey = await getJourney(id, session.user.id);
 
         if (!journey) {
             return NextResponse.json({ error: 'Journey not found' }, { status: 404 });

@@ -23,7 +23,7 @@ const faqs = [
     answer: "Achievements are automatically awarded when you meet certain milestones, such as logging your first journey, using a new mode of transport, or traveling a specific total distance. You can view all your earned badges on your dashboard and profile."
   },
   {
-    question: "What if I can't find a specific mode of transport?",
+    question: "What if I can&apos;t find a specific mode of transport?",
     answer: "We currently support driving, public transit, cycling, and walking. For driving, you can specify vehicle type (e.g., EV, hybrid, SUV) in the optional field for a more accurate calculation. We are always working on adding more options."
   },
 ];
@@ -39,7 +39,7 @@ export default function SupportPage() {
           Support Center
         </h1>
         <p className="mt-4 text-lg text-muted-foreground">
-          We're here to help. Find answers to frequently asked questions or get in touch with our support team.
+          We&apos;re here to help. Find answers to frequently asked questions or get in touch with our support team.
         </p>
       </div>
 
@@ -75,7 +75,7 @@ export default function SupportPage() {
                         <CardTitle className="text-2xl">Contact Us</CardTitle>
                     </div>
                     <CardDescription>
-                        Can't find an answer? Send us a message.
+                        Can&apos;t find an answer? Send us a message.
                     </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">

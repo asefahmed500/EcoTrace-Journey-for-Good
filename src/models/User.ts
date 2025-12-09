@@ -20,6 +20,29 @@ export interface IUser extends Document {
   achievements: IAchievement[];
   preferences: UserPreferences;
   teamId?: Types.ObjectId | null;
+  // Community & Gamification features
+  totalPoints: number;
+  level: number;
+  activeChallenges: Array<{
+    challengeId: string;
+    startDate: Date;
+    progress: number;
+    completed: boolean;
+  }>;
+  completedChallenges: Array<{
+    challengeId: string;
+    completedDate: Date;
+    pointsEarned: number;
+  }>;
+  streaks: {
+    carFree: number;
+    cycling: number;
+    walking: number;
+    publicTransit: number;
+    zeroEmission: number;
+  };
+  friends: Types.ObjectId[];
+  storiesShared: number;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -71,6 +94,29 @@ const UserSchema: Schema<IUser> = new Schema({
     required: false,
     default: null,
   },
+  // Community & Gamification features
+  totalPoints: { type: Number, default: 0 },
+  level: { type: Number, default: 1 },
+  activeChallenges: [{
+    challengeId: String,
+    startDate: Date,
+    progress: Number,
+    completed: Boolean
+  }],
+  completedChallenges: [{
+    challengeId: String,
+    completedDate: Date,
+    pointsEarned: Number
+  }],
+  streaks: {
+    carFree: { type: Number, default: 0 },
+    cycling: { type: Number, default: 0 },
+    walking: { type: Number, default: 0 },
+    publicTransit: { type: Number, default: 0 },
+    zeroEmission: { type: Number, default: 0 }
+  },
+  friends: [{ type: Schema.Types.ObjectId, ref: 'User' }],
+  storiesShared: { type: Number, default: 0 },
 }, { timestamps: true });
 
 const User: Model<IUser> = mongoose.models.User || mongoose.model<IUser>('User', UserSchema);

@@ -26,7 +26,7 @@ export function TeamDashboard({ team }: TeamDashboardProps) {
            </div>
             <div className="absolute inset-0 flex flex-col items-center justify-center text-center text-primary-foreground p-4">
                 <h1 className="text-4xl md:text-5xl font-bold [text-shadow:2px_2px_4px_rgba(0,0,0,0.5)]">{team.name}</h1>
-                <p className="text-lg md:text-xl mt-2 [text-shadow:1px_1px_2px_rgba(0,0,0,0.5)]">A summary of your team's collective environmental impact.</p>
+                <p className="text-lg md:text-xl mt-2 [text-shadow:1px_1px_2px_rgba(0,0,0,0.5)]">A summary of your team&apos;s collective environmental impact.</p>
             </div>
         </CardHeader>
         <CardContent className="pt-6">
@@ -43,7 +43,7 @@ export function TeamDashboard({ team }: TeamDashboardProps) {
             </Card>
             <Card className="bg-card-foreground/5">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Team's Total CO2 Footprint</CardTitle>
+                <CardTitle className="text-sm font-medium">Team&apos;s Total CO2 Footprint</CardTitle>
                 <Leaf className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>

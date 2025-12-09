@@ -1,17 +1,14 @@
 'use server';
 
 /**
- * @fileOverview This file defines a Genkit flow for calculating the carbon emissions of different travel routes and modes of transport.
+ * @fileOverview This file defines a flow for calculating the carbon emissions of different travel routes and modes of transport.
  *
  * - calculateRouteCarbonEmissions - A function that calculates the carbon emissions for a given route and mode of transport.
  * - RouteCarbonCalculatorInput - The input type for the calculateRouteCarbonEmissions function.
  * - RouteCarbonCalculatorOutput - The return type for the calculateRouteCarbonEmissions function.
  */
 
-import {ai} from '@/ai/genkit';
 import {z} from 'zod';
-import {getWeather} from '@/ai/tools/weather-tool';
-import {getEmissionFactor} from '@/ai/tools/emission-factors-tool';
 
 const RouteCarbonCalculatorInputSchema = z.object({
   routeDescription: z
@@ -55,62 +52,85 @@ export type RouteCarbonCalculatorOutput = z.infer<typeof RouteCarbonCalculatorOu
 export async function calculateRouteCarbonEmissions(
   input: RouteCarbonCalculatorInput
 ): Promise<RouteCarbonCalculatorOutput> {
-  return calculateRouteCarbonEmissionsFlow(input);
-}
-
-const calculateRouteCarbonEmissionsPrompt = ai.definePrompt({
-  name: 'calculateRouteCarbonEmissionsPrompt',
-  input: {schema: RouteCarbonCalculatorInputSchema},
-  output: {schema: RouteCarbonCalculatorOutputSchema},
-  tools: [getWeather, getEmissionFactor],
-  prompt: `You are a highly advanced environmental science AI. Your core function is to be a precise Carbon Calculation Engine for transportation. Your task is to accurately calculate the carbon emissions for a journey and provide actionable, eco-friendly alternatives based on detailed emission factors.
-
-  The journey data (distance, duration) is derived from Google Maps, incorporating real-time traffic. The current time can be inferred to be within a standard working day (e.g., 9am-7pm on a weekday).
-
-  **Input Data:**
-  - Route: {{{routeDescription}}}
-  - Origin Coordinates: Lat: {{{originCoords.lat}}}, Lng: {{{originCoords.lng}}}
-  - Mode of Transport: {{{modeOfTransport}}}
-  - Distance: {{{distanceInKilometers}}} km
-  - Duration: {{{durationInMinutes}}} minutes
-  - Vehicle Type: {{{vehicleType}}}
-
-  **Your Task:**
-
-  1.  **Select Emission Factor**: If the mode of transport is 'walking' or 'cycling', the emission factor is 0. For all other motorized transport, you **must** use the 'getEmissionFactor' tool. Provide the tool with the mode of transport, and vehicle type if available. If no vehicle type is provided for a 'driving' or 'car' trip, you should use 'Driving (Gasoline - Medium/SUV)' as the default for the tool. Use the origin coordinates for the location parameter of the tool.
-
-  2.  **Adjust for Weather (Seasonal Adjustment)**: For motorized transport, use the getWeather tool with the origin coordinates to check the current weather.
-      *   If the temperature is below 0°C (32°F) or above 35°C (95°F), apply a 10% penalty to the emission factor. This accounts for increased energy use from heating/cooling and reduced battery efficiency in EVs.
-      *   Mention this adjustment in the calculation details if applied.
-
-  3.  **Adjust for Traffic**: For motorized transport, calculate the average speed (km/h). If the average speed is below 30 km/h, assume heavy traffic and apply a multiplier to the base emission factor. Increase emissions by 15% for speeds 20-30 km/h, and by 30% for speeds below 20 km/h. This accounts for increased fuel consumption from idling and stop-and-go conditions.
-
-  4.  **Adjust for Public Transit Load Factor**: For 'public transit' modes, infer the time of day from the 'duration' and current context. Assume peak hours are 7-9am and 4-6pm. During peak hours, occupancy is high, so reduce the per-passenger emission factor by 20%. During off-peak hours, occupancy is lower, so increase the per-passenger emission factor by 15%. This simulates the distribution of total vehicle emissions over more or fewer passengers.
-
-  5.  **Calculate Total Emissions**:
-      *   Calculate the adjusted emission factor based on all relevant adjustments (weather, traffic, load factor).
-      *   Multiply the adjusted factor by the distance in kilometers.
-      *   Convert the final result to kilograms of CO2 and round to two decimal places.
-
-  6.  **Provide Detailed Breakdown ('calculationDetails')**: Explain your calculation clearly. State the base emission factor used (including which tool was called and with what parameters), and ANY adjustments made (weather, traffic, load factor), and show the final calculation. Example: "Based on a bus trip (90 g/km) during off-peak hours, a 15% load factor penalty was applied, resulting in an adjusted factor of 103.5 g/km. Total emissions: 103.5 g/km * 10 km = 1.04 kg CO2."
-
-  7.  **Suggest Smart Alternatives ('suggestedAlternatives')**: Provide at least two specific, lower-carbon alternatives. Compare the emissions saved. Example: "Taking the subway would generate only 0.6 kg CO2 for this trip, saving 2.71 kg. A cycling trip would produce zero emissions."
-
-  Your output must strictly follow the JSON schema provided.
-`,
-});
-
-const calculateRouteCarbonEmissionsFlow = ai.defineFlow(
-  {
-    name: 'calculateRouteCarbonEmissionsFlow',
-    inputSchema: RouteCarbonCalculatorInputSchema,
-    outputSchema: RouteCarbonCalculatorOutputSchema,
-  },
-  async input => {
-    const {output} = await calculateRouteCarbonEmissionsPrompt(input);
-    if (!output) {
-      throw new Error('The AI model failed to generate a valid response for carbon calculation.');
-    }
-    return output;
+  // Mock implementation without Google AI
+  const { modeOfTransport, distanceInKilometers, durationInMinutes, vehicleType } = input;
+  
+  let baseEmissionFactor = 0; // g CO2 per km
+  let calculationDetails = '';
+  
+  // Determine base emission factor
+  switch (modeOfTransport.toLowerCase()) {
+    case 'walking':
+    case 'cycling':
+      baseEmissionFactor = 0;
+      calculationDetails = `Zero emissions for ${modeOfTransport} - human-powered transport produces no direct CO2.`;
+      break;
+      
+    case 'driving':
+    case 'car':
+      if (vehicleType?.toLowerCase().includes('electric')) {
+        baseEmissionFactor = 50; // Electric vehicle
+        calculationDetails = 'Electric vehicle: 50g CO2/km (including electricity generation emissions).';
+      } else {
+        baseEmissionFactor = 180; // Gasoline car
+        calculationDetails = 'Gasoline vehicle: 180g CO2/km (medium-sized car, average fuel efficiency).';
+      }
+      break;
+      
+    case 'public transit':
+    case 'bus':
+      baseEmissionFactor = 90;
+      calculationDetails = 'Public bus: 90g CO2/km per passenger (average occupancy considered).';
+      break;
+      
+    case 'train':
+    case 'subway':
+      baseEmissionFactor = 45;
+      calculationDetails = 'Electric train/subway: 45g CO2/km per passenger (efficient mass transit).';
+      break;
+      
+    default:
+      baseEmissionFactor = 150;
+      calculationDetails = 'Default mixed transport: 150g CO2/km (estimated average).';
   }
-);
+  
+  // Apply traffic adjustment for motorized transport
+  let adjustedFactor = baseEmissionFactor;
+  if (baseEmissionFactor > 0) {
+    const averageSpeed = (distanceInKilometers / durationInMinutes) * 60; // km/h
+    
+    if (averageSpeed < 20) {
+      adjustedFactor *= 1.3; // 30% increase for heavy traffic
+      calculationDetails += ` Heavy traffic penalty applied (30% increase) due to low average speed (${averageSpeed.toFixed(1)} km/h).`;
+    } else if (averageSpeed < 30) {
+      adjustedFactor *= 1.15; // 15% increase for moderate traffic
+      calculationDetails += ` Moderate traffic penalty applied (15% increase) due to average speed (${averageSpeed.toFixed(1)} km/h).`;
+    }
+  }
+  
+  // Calculate total emissions
+  const totalEmissions = (adjustedFactor * distanceInKilometers) / 1000; // Convert to kg
+  
+  calculationDetails += ` Final calculation: ${adjustedFactor.toFixed(1)}g/km × ${distanceInKilometers}km = ${totalEmissions.toFixed(2)}kg CO2.`;
+  
+  // Generate alternatives
+  let suggestedAlternatives = '';
+  if (modeOfTransport.toLowerCase() === 'driving' || modeOfTransport.toLowerCase() === 'car') {
+    const publicTransitEmissions = (90 * distanceInKilometers) / 1000;
+    const savings = totalEmissions - publicTransitEmissions;
+    suggestedAlternatives = `Public transit would generate ${publicTransitEmissions.toFixed(2)}kg CO2, saving ${savings.toFixed(2)}kg. `;
+    suggestedAlternatives += `Cycling would produce zero emissions, saving the full ${totalEmissions.toFixed(2)}kg CO2.`;
+  } else if (modeOfTransport.toLowerCase().includes('public') || modeOfTransport.toLowerCase() === 'bus') {
+    suggestedAlternatives = `Train/subway would generate ${((45 * distanceInKilometers) / 1000).toFixed(2)}kg CO2, saving ${(totalEmissions - (45 * distanceInKilometers) / 1000).toFixed(2)}kg. `;
+    suggestedAlternatives += `Cycling would produce zero emissions, saving the full ${totalEmissions.toFixed(2)}kg CO2.`;
+  } else {
+    suggestedAlternatives = `Public transit would generate ${((90 * distanceInKilometers) / 1000).toFixed(2)}kg CO2. `;
+    suggestedAlternatives += `Cycling or walking would produce zero emissions.`;
+  }
+  
+  return {
+    estimatedEmissionsKgCO2: Math.round(totalEmissions * 100) / 100,
+    calculationDetails,
+    suggestedAlternatives
+  };
+}

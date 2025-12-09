@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect } from 'react';
-import { useFormState, useFormStatus } from 'react-dom';
+import { useActionState } from 'react';
+import { useFormStatus } from 'react-dom';
 import { resetPassword, type ResetPasswordState } from '@/app/actions';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
@@ -24,7 +25,7 @@ function SubmitButton() {
 }
 
 export function ResetPasswordForm({ token }: { token: string }) {
-    const [state, formAction] = useFormState(resetPassword, initialState);
+    const [state, formAction] = useActionState(resetPassword, initialState);
 
     useEffect(() => {
         if (token.length === 0 && !state.message) {

@@ -2,7 +2,7 @@
 import mongoose, { Document, Model, Schema, Types } from 'mongoose';
 
 // Note: Omit 'id' from JourneyType as it is handled by Mongoose's _id.
-export interface IJourney extends Omit<import('@/lib/types').Journey, 'id'>, Document {
+export interface IJourney extends Omit<import('@/lib/types').Journey, 'id' | 'userId'>, Document {
   _id: Types.ObjectId;
   userId: Types.ObjectId;
   createdAt: Date; // This is added by timestamps: true

@@ -12,11 +12,14 @@ import { marked } from 'marked';
 
 export function StorytellerDisplay() {
   const [story, setStory] = useState<AiStory | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [parsedHtml, setParsedHtml] = useState<string>('');
+  const [hasLoaded, setHasLoaded] = useState(false);
 
   const fetchStory = async () => {
+    if (isLoading || hasLoaded) return; // Prevent multiple requests
+    
     setIsLoading(true);
     setError(null);
     try {
@@ -25,21 +28,29 @@ export function StorytellerDisplay() {
       
       if (response.ok) {
         setStory(result);
-        const html = await marked.parse(result.narrative);
+        // Handle both 'narrative' and 'content' fields for backward compatibility
+        const storyText = result.narrative || result.content || 'No story content available.';
+        const html = await marked.parse(storyText);
         setParsedHtml(html);
+        setHasLoaded(true);
       } else {
-        setError(result.error || 'An unexpected error occurred.');
+        console.error('API Error:', result);
+        setError(result.error || 'An unexpected error occurred while generating your story.');
       }
     } catch (e) {
-      setError('An unexpected error occurred while fetching your story.');
+      console.error('Fetch Error:', e);
+      setError('An unexpected error occurred while fetching your story. Please check your internet connection and try again.');
     } finally {
       setIsLoading(false);
     }
   };
 
-  useEffect(() => {
-    fetchStory();
-  }, []);
+  // Don't auto-load, only load when user clicks the tab or button
+  const handleLoadStory = () => {
+    if (!hasLoaded) {
+      fetchStory();
+    }
+  };
 
   if (isLoading) {
     return (
@@ -64,22 +75,54 @@ export function StorytellerDisplay() {
             <AlertTitle>Could not generate AI summary</AlertTitle>
             <AlertDescription>
                 {error}
-                <Button variant="link" onClick={fetchStory} className="p-0 h-auto ml-2">Try again</Button>
+                <div className="mt-2">
+                    <Button 
+                        variant="outline" 
+                        size="sm" 
+                        onClick={() => {
+                            setError(null);
+                            setHasLoaded(false);
+                            fetchStory();
+                        }}
+                    >
+                        Try again
+                    </Button>
+                </div>
             </AlertDescription>
         </Alert>
     )
   }
 
-  if (!story) {
+  if (!story && !hasLoaded) {
     return (
       <Card className="flex flex-col items-center justify-center text-center py-20">
         <CardHeader>
             <div className="mx-auto bg-muted/50 p-4 rounded-full mb-4">
                 <BotMessageSquare className="size-12 text-muted-foreground" />
             </div>
-            <CardTitle className="text-2xl">Your AI Story Will Appear Here</CardTitle>
-            <CardDescription className="max-w-md mx-auto">
-                Once you log some journeys, our AI Eco-Coach will generate a personalized summary of your progress right here.
+            <CardTitle className="text-2xl">Generate Your AI Story</CardTitle>
+            <CardDescription className="max-w-md mx-auto mb-4">
+                Get a personalized AI-generated summary of your environmental impact and journey progress.
+            </CardDescription>
+            <Button onClick={handleLoadStory} disabled={isLoading}>
+              <Sparkles className="mr-2 h-4 w-4" />
+              {isLoading ? 'Generating...' : 'Generate AI Story'}
+            </Button>
+        </CardHeader>
+      </Card>
+    )
+  }
+
+  if (!story && hasLoaded) {
+    return (
+      <Card className="flex flex-col items-center justify-center text-center py-20">
+        <CardHeader>
+            <div className="mx-auto bg-muted/50 p-4 rounded-full mb-4">
+                <BotMessageSquare className="size-12 text-muted-foreground" />
+            </div>
+            <CardTitle className="text-2xl">No Story Available</CardTitle>
+            <CardDescription className="max-w-md mx-auto mb-4">
+                Log some journeys first to generate your personalized AI story.
             </CardDescription>
         </CardHeader>
       </Card>
@@ -91,7 +134,7 @@ export function StorytellerDisplay() {
       <CardHeader>
         <div className="flex items-center gap-3">
             <Sparkles className="size-6 text-primary" />
-            <CardTitle className="text-3xl">{story.title}</CardTitle>
+            <CardTitle className="text-3xl">{story?.title || 'Your EcoTrace Story'}</CardTitle>
         </div>
       </CardHeader>
       <CardContent>

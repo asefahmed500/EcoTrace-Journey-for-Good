@@ -64,7 +64,7 @@ export default function PricingPage() {
           Choose Your Plan, Amplify Your Impact
         </h1>
         <p className="mt-4 text-lg text-muted-foreground">
-          Whether you're an individual, a small team, or a large organization, we have a plan that fits your needs.
+          Whether you&apos;re an individual, a small team, or a large organization, we have a plan that fits your needs.
         </p>
       </div>
 

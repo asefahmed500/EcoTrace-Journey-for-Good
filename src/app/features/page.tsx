@@ -53,7 +53,7 @@ export default function FeaturesPage() {
           Powerful Features for a Greener Tomorrow
         </h1>
         <p className="mt-4 text-lg text-muted-foreground">
-          EcoTrace is more than just a calculator. It's a comprehensive toolkit designed to empower you with the insights and motivation needed to make a real-world impact.
+          EcoTrace is more than just a calculator. It&apos;s a comprehensive toolkit designed to empower you with the insights and motivation needed to make a real-world impact.
         </p>
       </div>
 

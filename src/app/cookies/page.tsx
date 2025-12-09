@@ -26,7 +26,7 @@ export default function CookiesPage() {
             <p>We use cookies for the following purposes:</p>
             <ul>
                 <li><strong>Essential Cookies:</strong> These cookies are necessary for the website to function and cannot be switched off in our systems. They are usually only set in response to actions made by you which amount to a request for services, such as setting your privacy preferences, logging in, or filling in forms. For example, we use a cookie to maintain your session when you are logged in.</li>
-                <li><strong>Functionality Cookies:</strong> We use a cookie to remember the state of your dashboard sidebar (whether it's open or closed) to enhance your user experience on return visits.</li>
+                <li><strong>Functionality Cookies:</strong> We use a cookie to remember the state of your dashboard sidebar (whether it&apos;s open or closed) to enhance your user experience on return visits.</li>
             </ul>
 
             <h2 className="text-2xl font-semibold text-foreground">Your Choices Regarding Cookies</h2>

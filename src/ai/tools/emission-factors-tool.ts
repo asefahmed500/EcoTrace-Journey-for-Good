@@ -1,10 +1,9 @@
 
 'use server';
 /**
- * @fileOverview A Genkit tool for fetching carbon emission factors for different modes of transport.
+ * @fileOverview A tool for fetching carbon emission factors for different modes of transport.
  */
 
-import { ai } from '@/ai/genkit';
 import { z } from 'zod';
 
 const EmissionFactorInputSchema = z.object({
@@ -37,14 +36,7 @@ const emissionFactorsDatabase = {
 };
 
 
-export const getEmissionFactor = ai.defineTool(
-  {
-    name: 'getEmissionFactor',
-    description: 'Returns the carbon emission factor for a given mode of transport and vehicle type.',
-    inputSchema: EmissionFactorInputSchema,
-    outputSchema: EmissionFactorOutputSchema,
-  },
-  async (input) => {
+export async function getEmissionFactor(input: z.infer<typeof EmissionFactorInputSchema>): Promise<z.infer<typeof EmissionFactorOutputSchema>> {
     console.log(`[Emission Factor Tool] Looking up for:`, input);
 
     const mode = input.modeOfTransport.toLowerCase().replace(/\s+/g, '_');
@@ -81,5 +73,4 @@ export const getEmissionFactor = ai.defineTool(
 
     // 4. Final fallback to a generic driving default if nothing else matches
     return emissionFactorsDatabase.driving_gasoline_medium_suv;
-  }
-);
+}

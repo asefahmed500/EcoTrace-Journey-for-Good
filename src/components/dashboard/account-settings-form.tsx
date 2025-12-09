@@ -23,7 +23,6 @@ import {
 } from "@/components/ui/alert-dialog"
 import { Separator } from '../ui/separator';
 import { useRouter } from 'next/navigation';
-import { signOut } from 'next-auth/react';
 
 interface AccountSettingsFormProps {
     preferences: UserPreferences;
@@ -105,7 +104,10 @@ export function AccountSettingsForm({ preferences: initialPreferences, team: ini
              const result = await response.json();
              if(response.ok) {
                 toast({ title: "Account Deleted", description: result.message });
-                await signOut({ callbackUrl: '/' });
+                // Sign out and redirect
+                await fetch('/api/auth/logout', { method: 'POST' });
+                router.push('/');
+                router.refresh();
              } else {
                 toast({ variant: 'destructive', title: 'Deletion Failed', description: result.message });
              }

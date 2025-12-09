@@ -8,6 +8,7 @@ import { z } from 'zod';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
+import { PlacesAutocompleteInput } from '@/components/ui/places-autocomplete-input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
@@ -93,7 +94,12 @@ export function PredictiveRoutingForm() {
                   <FormItem>
                     <FormLabel>Origin</FormLabel>
                     <FormControl>
-                      <Input placeholder="e.g., Downtown" {...field} />
+                      <PlacesAutocompleteInput
+                        value={field.value}
+                        onChange={(value) => field.onChange(value)}
+                        placeholder="e.g., Downtown"
+                        disabled={isSubmitting}
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -106,7 +112,12 @@ export function PredictiveRoutingForm() {
                   <FormItem>
                     <FormLabel>Destination</FormLabel>
                     <FormControl>
-                      <Input placeholder="e.g., Airport" {...field} />
+                      <PlacesAutocompleteInput
+                        value={field.value}
+                        onChange={(value) => field.onChange(value)}
+                        placeholder="e.g., Airport"
+                        disabled={isSubmitting}
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>

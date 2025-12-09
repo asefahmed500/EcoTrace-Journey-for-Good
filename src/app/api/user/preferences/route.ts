@@ -1,65 +1,53 @@
-'use server';
+import { NextRequest, NextResponse } from 'next/server';
+import { getAuthSession } from '@/lib/auth-wrapper';
+import { getAuthenticatedUserData, updateUserPreferences } from '@/app/actions';
 
-import { auth } from '@/auth';
-import { NextResponse } from 'next/server';
-import dbConnect from '@/lib/db';
-import User from '@/models/User';
-import { z } from 'zod';
-
-const preferencesSchema = z.object({
-  favoriteRoutes: z.string().trim().max(100, 'Favorite routes cannot exceed 100 characters.').optional(),
-  transportModes: z.string().trim().max(100, 'Transport modes cannot exceed 100 characters.').optional(),
-  environmentalPriorities: z.string().trim().max(200, 'Priorities cannot exceed 200 characters.').optional(),
-});
-
-export async function GET(req: Request) {
-    const session = await auth();
+export async function GET(request: NextRequest) {
+  try {
+    const session = await getAuthSession();
     if (!session?.user?.id) {
-        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
-    
-    try {
-        await dbConnect();
-        const user = await User.findById(session.user.id).select('preferences').lean();
 
-        if (!user) {
-            return NextResponse.json({ error: 'User not found' }, { status: 404 });
-        }
-
-        return NextResponse.json(user.preferences || {});
-    } catch (e) {
-        console.error('Error fetching preferences:', e);
-        return NextResponse.json({ error: 'Failed to fetch preferences.' }, { status: 500 });
-    }
+    const { preferences } = await getAuthenticatedUserData();
+    return NextResponse.json(preferences);
+  } catch (error) {
+    console.error('Error in user preferences GET API:', error);
+    return NextResponse.json(
+      { error: 'An unexpected error occurred while fetching preferences.' },
+      { status: 500 }
+    );
+  }
 }
 
-
-export async function PUT(req: Request) {
-    const session = await auth();
+export async function PUT(request: NextRequest) {
+  try {
+    const session = await getAuthSession();
     if (!session?.user?.id) {
-        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
+
+    const body = await request.json();
+    const { favoriteRoutes, transportModes, environmentalPriorities } = body;
+
+    // Convert to FormData format expected by the server action
+    const formData = new FormData();
+    if (favoriteRoutes) formData.append('favoriteRoutes', favoriteRoutes);
+    if (transportModes) formData.append('transportModes', transportModes);
+    if (environmentalPriorities) formData.append('environmentalPriorities', environmentalPriorities);
+
+    const result = await updateUserPreferences(null, formData);
     
-    try {
-        const body = await req.json();
-        const validatedFields = preferencesSchema.safeParse(body);
-        
-        if (!validatedFields.success) {
-            return NextResponse.json({
-                error: 'Invalid input.',
-                fieldErrors: validatedFields.error.flatten().fieldErrors,
-            }, { status: 400 });
-        }
-
-        await dbConnect();
-        await User.findByIdAndUpdate(session.user.id, {
-            preferences: validatedFields.data,
-        });
-
-        return NextResponse.json({ success: true, message: 'Your preferences have been updated.' });
-
-    } catch (e) {
-        console.error('Error updating preferences:', e);
-        return NextResponse.json({ error: 'Failed to update preferences.' }, { status: 500 });
+    if (!result?.success) {
+      return NextResponse.json({ error: result?.message || 'Failed to update preferences' }, { status: 400 });
     }
+
+    return NextResponse.json({ success: true, message: result.message });
+  } catch (error) {
+    console.error('Error in user preferences PUT API:', error);
+    return NextResponse.json(
+      { error: 'An unexpected error occurred while updating preferences.' },
+      { status: 500 }
+    );
+  }
 }

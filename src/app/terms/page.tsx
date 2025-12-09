@@ -17,7 +17,7 @@ export default function TermsPage() {
         </div>
 
         <div className="prose prose-lg dark:prose-invert max-w-none space-y-6 text-muted-foreground">
-            <p>Please read these Terms of Service ("Terms") carefully before using the EcoTrace application (the "Service") operated by us.</p>
+            <p>Please read these Terms of Service (&ldquo;Terms&rdquo;) carefully before using the EcoTrace application (the &ldquo;Service&rdquo;) operated by us.</p>
 
             <h2 className="text-2xl font-semibold text-foreground">1. Acceptance of Terms</h2>
             <p>By accessing or using the Service, you agree to be bound by these Terms. If you disagree with any part of the terms, then you may not access the Service.</p>

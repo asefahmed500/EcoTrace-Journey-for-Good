@@ -53,7 +53,7 @@ export default function CommunityPage() {
           Join a Movement of Changemakers
         </h1>
         <p className="mt-4 mx-auto max-w-2xl text-lg text-muted-foreground">
-          You're not alone on this journey. The EcoTrace community is a growing global network of individuals, teams, and organizations committed to creating a sustainable future, one trip at a time.
+          You&apos;re not alone on this journey. The EcoTrace community is a growing global network of individuals, teams, and organizations committed to creating a sustainable future, one trip at a time.
         </p>
         <div className="mt-8">
             <Button asChild size="lg">
@@ -86,7 +86,7 @@ export default function CommunityPage() {
              <Card key={testimonial.name} className="flex flex-col justify-between">
               <CardContent className="pt-6">
                 <blockquote className="text-lg text-foreground mb-6">
-                  "{testimonial.text}"
+                  &ldquo;{testimonial.text}&rdquo;
                 </blockquote>
               </CardContent>
               <div className="bg-muted/50 p-6 flex items-center gap-4 rounded-b-lg">

@@ -4,6 +4,7 @@ export type Journey = {
   origin: string;
   destination: string;
   distance: number;
+  duration?: number;
   mode: string;
   emissions: number;
   date: Date;
@@ -38,6 +39,8 @@ export type LeaderboardUser = {
   image?: string | null;
   totalEmissions: number;
   rank: number;
+  achievements?: Achievement[];
+  memberSince?: string;
 };
 
 export type PublicUserProfile = {

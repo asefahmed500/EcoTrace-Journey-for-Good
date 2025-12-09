@@ -1,5 +1,5 @@
 
-import { auth } from '@/auth';
+import { getAuthSession } from '@/lib/auth-wrapper';
 import { getAuthenticatedUserData } from '@/app/actions';
 import { Header } from '@/components/layout/header';
 import { Logo } from '@/components/icons/logo';
@@ -31,7 +31,7 @@ export default async function DashboardLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const session = await auth();
+  const session = await getAuthSession();
   if (!session?.user) {
     // This should be handled by middleware, but as a fallback.
     redirect('/login');

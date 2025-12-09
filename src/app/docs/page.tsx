@@ -31,7 +31,7 @@ export default function DocsPage() {
           API Documentation
         </h1>
         <p className="mt-4 text-lg text-muted-foreground">
-          Integrate EcoTrace's powerful carbon calculation engine into your own applications. Our developer-friendly API provides a simple way to access our advanced environmental impact data.
+          Integrate EcoTrace&apos;s powerful carbon calculation engine into your own applications. Our developer-friendly API provides a simple way to access our advanced environmental impact data.
         </p>
       </div>
 
